@@ -1,6 +1,7 @@
 
 1. 构建项目
-   create a `tools.go` file and add gqlgen as a tool dependency.
+
+   create a =tools.go= file and add gqlgen as a tool dependency.
 
    #+begin_src go
      //go:build tools
@@ -14,6 +15,7 @@
    #+end_src
 
 2. 使用 gqlgen 创建项目骨架
+
    #+begin_example
      go run github.com/99designs/gqlgen init
    #+end_example
