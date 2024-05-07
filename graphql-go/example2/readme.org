@@ -1,0 +1,197 @@
+
+1. 构建项目
+   create a `tools.go` file and add gqlgen as a tool dependency.
+
+   #+begin_src go
+     //go:build tools
+     // +build tools
+
+     package tools
+
+     import (
+         _ "github.com/99designs/gqlgen"
+     )
+   #+end_src
+
+2. 使用 gqlgen 创建项目骨架
+   #+begin_example
+     go run github.com/99designs/gqlgen init
+   #+end_example
+
+   #+begin_example
+     ├── go.mod
+     ├── go.sum
+     ├── gqlgen.yml               - The gqlgen config file, knobs for controlling the generated code.
+     ├── graph
+     │   ├── generated            - A package that only contains the generated runtime
+     │   │   └── generated.go
+     │   ├── model                - A package for all your graph models, generated or otherwise
+     │   │   └── models_gen.go
+     │   ├── resolver.go          - The root graph resolver type. This file wont get regenerated
+     │   ├── schema.graphqls      - Some schema. You can split the schema into as many graphql files as you like
+     │   └── schema.resolvers.go  - the resolver implementation for schema.graphql
+     └── server.go                - The entry point to your app. Customize it however you see fit
+   #+end_example
+
+   graph/schema.graphqls 是由 gqlgen 默认生成的代码，使用 GraphQL Schema Definition Language 描述 API。
+
+   有了 schema 后，我们需要实现 resolvers。
+
+3. 使用默认的 schema，实现 resolvers
+
+   运行 gqlgen 的 generate 命令将会根据 schema 文件（graph/schema.graphqls）生成 models 文件（graph/model/*），init 已经包括了这步。
+
+   然后看一看 graph/schema.resolvers.go 这个文件，它就是我们的 resolvers，目前它们还不完整，需要实现下面的两个方法。
+
+   #+begin_src go
+     // CreateTodo is the resolver for the createTodo field.
+     func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
+         panic(fmt.Errorf("not implemented: CreateTodo - createTodo"))
+     }
+
+     // Todos is the resolver for the todos field.
+     func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
+         panic(fmt.Errorf("not implemented: Todos - todos"))
+     }
+   #+end_src
+
+   实现这两个方法之前，我们先把补充一下这个 graph/resolver.go 中的 Resolver：
+
+   #+begin_src go
+     type Resolver struct{
+         todos []*model.Todo
+     }
+   #+end_src
+
+   然后回到 graph/schema.resolvers.go，在这里我们使用 ~crypto.rand~ 返回一个随机生成的 ID 作为 todo，并把它存在内存中。在实际的应用中，你应该使用数据库或其他的服务。
+
+   #+begin_src go
+     func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
+         randNumber, _ := rand.Int(rand.Reader, big.NewInt(100))
+         todo := &model.Todo{
+             Text: input.Text,
+             ID:   fmt.Sprintf("T%d", randNumber),
+             User: &model.User{ID: input.UserID, Name: "user " + input.UserID},
+         }
+         r.todos = append(r.todos, todo)
+         return todo, nil
+     }
+
+     func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
+         return r.todos, nil
+     }
+   #+end_src
+
+4. run the server
+
+   #+begin_example
+     go run server.go
+   #+end_example
+
+   #+begin_example
+     mutation createTodo {
+       createTodo(input: { text: "todo", userId: "1" }) {
+         user {
+           id
+         }
+         text
+         done
+       }
+     }
+   #+end_example
+
+   #+begin_example
+     query findTodos {
+       todos {
+         text
+         done
+         user {
+           name
+         }
+       }
+     }
+   #+end_example
+
+5. 条件查询
+
+   实际使用中 Todo 和 User 应该是分开存储的，所以我们来更改生成的 Todo model 以适应真实开发。
+
+   首先开启 ~autobind~ 允许手动修改 models，开启 ~autobind~ 需要关闭它在 gqlgen.yml 中的注释。
+
+   #+begin_src yaml
+     # gqlgen will search for any type names in the schema in these go packages
+     # if they match it will use them, otherwise it will generate them.
+     autobind:
+       - "github.com/haoran-mc/demos/graphql-go/example2/graph/model"
+   #+end_src
+
+   然后在 gqlgen.yml 中添加 Todo fields resolver 的配置。
+
+   #+begin_src yaml
+     # This section declares type mapping between the GraphQL and go type systems
+     #
+     # The first line in each type will be used as defaults for resolver arguments and
+     # modelgen, the others will be allowed when binding to fields. Configure them to
+     # your liking
+     models:
+       ID:
+         model:
+           - github.com/99designs/gqlgen/graphql.ID
+           - github.com/99designs/gqlgen/graphql.Int
+           - github.com/99designs/gqlgen/graphql.Int64
+           - github.com/99designs/gqlgen/graphql.Int32
+       Int:
+         model:
+           - github.com/99designs/gqlgen/graphql.Int
+           - github.com/99designs/gqlgen/graphql.Int64
+           - github.com/99designs/gqlgen/graphql.Int32
+   #+end_src
+
+   然后创建一个新文件 graph/model/todo.go
+
+   #+begin_src go
+     package model
+
+     type Todo struct {
+         ID     string `json:"id"`
+         Text   string `json:"text"`
+         Done   bool   `json:"done"`
+         UserID string `json:"userId"`
+         User   *User  `json:"user"`
+     }
+   #+end_src
+
+   然后运行 ~go run github.com/99designs/gqlgen generate~ 。
+
+   然后重新实现 CreateTodo 和 User：
+
+   #+begin_src go
+     func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
+         randNumber, _ := rand.Int(rand.Reader, big.NewInt(100))
+         todo := &model.Todo{
+             Text:   input.Text,
+             ID:     fmt.Sprintf("T%d", randNumber),
+             UserID: input.UserID,
+         }
+         r.todos = append(r.todos, todo)
+         return todo, nil
+     }
+
+     func (r *todoResolver) User(ctx context.Context, obj *model.Todo) (*model.User, error) {
+         return &model.User{ID: obj.UserID, Name: "user " + obj.UserID}, nil
+     }
+   #+end_src
+
+6. end
+
+   At the top of our resolver.go, between package and import, add the following line:
+
+   #+begin_src go
+     //go:generate go run github.com/99designs/gqlgen generate
+   #+end_src
+
+   This magic comment tells go generate what command to run when we want to regenerate our code. To run go generate recursively over your entire project, use this command:
+
+   #+begin_example
+     go generate ./...
+   #+end_example
