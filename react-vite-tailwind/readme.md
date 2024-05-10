@@ -40,3 +40,14 @@ success Installed "create-vite@5.2.3" with binaries:
 
 然后运行 `yarn dev` 运行测试。
 
+
+```shell
+# 下载 tailwindcss 要求的依赖
+yarn add -D tailwindcss postcss autoprefixer
+
+# 初始化 tailwindcss
+npx tailwindcss init -p
+# 会创建两个配置文件
+# 1. tailwind.config.js tailwind 的配置文件
+# 2. postcss.config.js postcss 的配置文件
+```
