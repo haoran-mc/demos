@@ -51,3 +51,14 @@ npx tailwindcss init -p
 # 1. tailwind.config.js tailwind 的配置文件
 # 2. postcss.config.js postcss 的配置文件
 ```
+
+-----
+
+```
+└── src/
+    ├── pages/           # 页面组件，例如首页、关于页面、联系页面
+    ├── widgets/         # 解决方案部分、解决流程部分
+    └── component/       # 页面共用
+```
+
+`yarn dev` 运行。
