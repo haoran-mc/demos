@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+// 与 go 中的 package 不同，是指 rpoto 文件所在的包
+package notes;
+
+// 别名
+option go_package = "github.com/haoran-mc/demos/grpc;notes";
+
+// service
+service Notes {
+	rpc Save (Note) returns (NoteSaveReply) {}
+	rpc Load (NoteSearch) returns (Note) {}
+}
+
+// 笔记实体，包含标题和内容
+message Note {
+	string title = 1;
+	bytes body = 2;
+}
+
+// 搜索笔记
+message NoteSearch {
+	string keyword = 1;
+}
+
+// rpc 响应，saved 是 true 还是 false
+message NoteSaveReply {
+	bool saved = 1;
+}
+
+

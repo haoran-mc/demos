@@ -1,0 +1,172 @@
+#+BLOCK_LINE: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#+TITLE: README
+#+AUTHOR: Haoran Liu
+#+EMAIL: haoran.mc@outlook.com
+#+DATE: 2024-05-24 11:05 Fri
+#+STARTUP: showeverything
+#+BLOCK_LINE: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# https://github.com/xNok/go-grpc-demo/
+
+* 1. 学习 protobuf 语法
+#+begin_example
+https://protobuf.dev/programming-guides/proto3
+#+end_example
+
+You will need ~protoc~ to generate proto buffer code.
+
+#+begin_example
+  sudo apt update
+  sudo apt install protobuf-compiler
+#+end_example
+
+#+begin_example
+  go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.26
+  go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1
+  export PATH="$PATH:$(go env GOPATH)/bin"
+#+end_example
+
+* 2. 创建 go 项目
+#+begin_example
+  go mod init github.com/haoran-mc/demos/grpc
+#+end_example
+
+* 3. 定义 protobuf 结构体
+项目结构是这样：
+
+#+begin_example
+   ├── notes_client
+   │   └── main.go
+   ├── notes_proto
+   │   ├── notes.proto ← 这步，需要编写这个文件
+   │   └── generate_code.sh
+   └── notes_server
+       └── main.go
+#+end_example
+
+#+begin_example
+  syntax = "proto3";
+
+  package notes;
+
+  option go_package = "github.com/haoran-mc/demos/grpc;notes"
+
+  service Notes {
+      rpc Save (Note) returns (NoteSaveReply) {}
+      rpc Load (NoteSearch) returns (Note) {}
+  }
+
+  message Note {
+      string title = 1;
+      bytes body = 2;
+  }
+
+  message NoteSearch {
+      string keyword = 1;
+  }
+
+  message NoteSaveReply {
+      bool saved = 1;
+  }
+#+end_example
+
+* 4. 生成 proto code
+#+begin_example
+  protoc --go_out=. --go_opt=paths=source_relative \
+      --go-grpc_out=. --go-grpc_opt=paths=source_relative \
+      notes_proto/notes.proto
+#+end_example
+
+上面的命令会利用 proto 文件生成 go 代码，为了运行简单，把这个命令放在了 ./notes_proto/generate_code.sh 脚本文件中。
+
+~./notes_proto/generate_code.sh~ 运行脚本生成代码：
+
+#+begin_example
+  ❯ tree .
+  .
+  ├── go.mod
+  ├── notes_client
+  ├── notes_proto
+  │   ├── generate_code.sh
+  │   ├── notes.pb.go
+  │   ├── notes.proto
+  │   └── notes_grpc.pb.go
+  ├── notes_server
+  └── readme.org
+#+end_example
+
+生成了 =notes_proto= 目录下的 *.pb.go 文件。
+
+* 5. 编写服务端代码
+1. 取出 server
+   #+begin_src go
+     type notesServer struct {
+         notes.UnimplementedNotesServer
+     }
+   #+end_src
+
+2. 挂载方法
+   #+begin_src go
+     func (s *notesServer) Save(ctx context.Context, n *notes.Note) (*notes.NoteSaveReply, error) {
+         // ...
+     }
+
+     func (s *notesServer) Load(ctx context.Context, search *notes.NoteSearch) (*notes.Note, error) {
+         // ...
+     }
+   #+end_src
+
+3. 注册服务
+   #+begin_src go
+     lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
+     s := grpc.NewServer()
+     notes.RegisterNotesServer(s, &notesServer{})
+   #+end_src
+
+4. 创建监听
+   #+begin_src go
+     s.Serve(lis)
+   #+end_src
+
+* 6. 编写客户端代码
+1. 创建一个链接
+   #+begin_src go
+     conn, err := grpc.Dial(*addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+   #+end_src
+
+2. new 一个 client
+   #+begin_src go
+     client := notes.NewNotesClient(conn)
+   #+end_src
+
+3. 调用 client 的方法
+   #+begin_src go
+     note, err := client.Load(ctx, &notes.NoteSearch{
+         Keyword: *loadKeywork,
+     })
+   #+end_src
+
+4. 获取返回值
+   #+begin_src go
+     fmt.Printf("%v\n", note)
+   #+end_src
+
+* 7. quick start
+1. run the server
+   #+begin_example
+     go run ./notes_server/main.go
+   #+end_example
+
+2. save a note
+   #+begin_example
+     go run notes_client/main.go save -title test -content "Lorem ipsum dolor sit amet, consectetur "
+   #+end_example
+
+3. load a note
+   #+begin_example
+     go run notes_client/main.go load -keyword Lorem
+   #+end_example
+
+#+begin_comment
+lorem: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+#+end_comment
