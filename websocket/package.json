@@ -1,0 +1,15 @@
+{
+  "name": "demo-websocket",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/haoran-mc/demos/tree/main/websocket",
+  "author": "haoran",
+  "license": "MIT",
+  "type": "module",
+  "devDependencies": {
+    "eslint": "9.x",
+    "globals": "^15.3.0",
+    "prettier": "^3.1.0",
+    "prettier-eslint": "^16.1.2"
+  }
+}

@@ -1,0 +1,80 @@
+package {
+    import flash.display.Sprite;
+
+    public class SocketExample extends Sprite {
+        private var socket:CustomSocket;
+
+        public function SocketExample() {
+            socket = new CustomSocket("localhost", 80);
+        }
+    }
+}
+
+import flash.errors.*;
+import flash.events.*;
+import flash.net.Socket;
+
+class CustomSocket extends Socket {
+    private var response:String;
+
+    public function CustomSocket(host:String = null, port:uint = 0) {
+        super();
+        configureListeners();
+        if (host && port)  {
+            super.connect(host, port);
+        }
+    }
+    //监听事件
+    private function configureListeners():void {
+        addEventListener(Event.CLOSE, closeHandler);
+        addEventListener(Event.CONNECT, connectHandler);
+        addEventListener(IOErrorEvent.IO_ERROR, ioErrorHandler);
+        addEventListener(SecurityErrorEvent.SECURITY_ERROR, securityErrorHandler);
+        addEventListener(ProgressEvent.SOCKET_DATA, socketDataHandler);
+    }
+    //写文本
+    private function writeln(str:String):void {
+        str += "\n";
+        try {
+            writeUTFBytes(str);
+        }
+        catch(e:IOError) {
+            trace(e);
+        }
+    }
+    //发送数据
+    private function sendRequest():void {
+        trace("sendRequest");
+        response = "";
+        writeln("GET /");
+        flush();
+    }
+    //读取数据
+    private function readResponse():void {
+        var str:String = readUTFBytes(bytesAvailable);
+        response += str;
+    }
+    //关闭连接
+    private function closeHandler(event:Event):void {
+        trace("closeHandler: " + event);
+        trace(response.toString());
+    }
+    //连接建立成功
+    private function connectHandler(event:Event):void {
+        trace("connectHandler: " + event);
+        sendRequest();
+    }
+    //io错误
+    private function ioErrorHandler(event:IOErrorEvent):void {
+        trace("ioErrorHandler: " + event);
+    }
+    //安全错误
+    private function securityErrorHandler(event:SecurityErrorEvent):void {
+        trace("securityErrorHandler: " + event);
+    }
+    //接收socket数据
+    private function socketDataHandler(event:ProgressEvent):void {
+        trace("socketDataHandler: " + event);
+        readResponse();
+    }
+}
