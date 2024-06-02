@@ -1,5 +1,4 @@
 #+BLOCK_LINE: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#+TITLE: README
 #+AUTHOR: Haoran Liu
 #+EMAIL: haoran.mc@outlook.com
 #+DATE: 2024-06-01 13:06 Sat
@@ -8,4 +7,107 @@
 
 Forked from [[https://github.com/txiejun/websocket-demo][txiejun/websocket-demo]].
 
+传统的浏览器通信方式主要是基于 HTTP 协议的请求/响应模式。
 
+早期必须通过刷新浏览器来更新服务器端的数据，后来出现了 Ajax 技术可以不用刷新浏览器更新服务器端数据。
+但是这种模式的问题在于：只能通过客户端主动请求，服务器应答来获得数据，而服务器端有数据变化后无法通过推送方式主动告诉客户端数据的变化。
+
+随着网络的发展和需求的变化，越来越多的应用场景需要浏览器支持即时的可服务器端推送的通信方式。在 HTML5 出现之前，没有一个官方的办法可以做到真正意义上的基于 web 的通信方案。
+
+web 即时通信最佳实践：
+
+* Hack 方式实现 web 即时通信方案
+hack 手段指的是在标准技术或协议之外，通过一些巧妙的方法或技巧来实现即时通信的解决方案。这些方法往往是在标准协议（如HTTP）基础上，采用一些创新或非传统的方式来实现实时通信功能。
+
+它们的应用场景是对实时性有要求和浏览器覆盖面广的应用，如微博私信等一些简单即时聊天。
+
+但是下面的 hack 方式除了 Flash Socket 外，其余 hack 方式实时性相对较差，所以对实时性有较高要求的场景不适用。
+
+- Ajax JSONP Polling（短轮询）
+  - 实现思路：客户端通过 Ajax（jsonp 实现跨域）的方式每隔一小段时间发送一个请求到服务器，服务器立刻返回数据；
+  - 优点：短连接，服务器处理简，支持跨域，浏览器兼容性较好；
+  - 缺点：有一定延迟，服务器压力较大，浪费带宽流量，大部分是无效请求；
+- Ajax Long Polling（长轮询）
+  - 实现思路：容户端通过 Ajax（jsonp 实现跨域）发起请求，服务器不马上返回，大是保持住这个连接直到有数据要推送给容户端时才发送响应给容户端。容户端收到响应之后面上再发起一个新的请求给服务器，周而复始；
+  - 优点：减少轮询次数，低延迟，浏览器兼容性较好；
+  - 缺点：服务器需要保持大量连接；
+- Forever iframe（Comet Streaming）
+  - 实现思路：在容户端（浏览器）中动态载入一个隐藏的 iframe 标签，该标签的 src 属性指向请求的服务器 url（也就是向服务器发送了一个 http 请求），然后客户端创建一个处理数据的函数，在服务器通过 iframe 与客户端的数连接定时输出数据给客户端，但是返回的数据是一个类似 script 标签的文本，客户端解析为 js 代码并执行其中的函数，从而达到通信的目的（和 jsonp 类似）；
+  - 优点：实现简单，在所有支持 iframe 的浏览器上都可用，客户端一次连接，服务器多次推送；
+  - 缺点：无法准确知道连接状态；
+- Ajax multipart streaming（Comet Streaming）
+  - 实现思路：浏览器必须支持 multi-part 标志，客户端通过 Ajax 发出请求，服务器保持住这个连接，然后可以通过 HTTP1.1 的 ~chunked encoding~ 机制（分块传输编码）不断 push 数据给客户端直到 timeout 或手动断开连接；
+  - 优点：客户端一次连接，服务器数据可多次推送；
+  - 缺点：并非所有的浏览器都支持 multi-part 标志；
+- Flash Socket
+  - 实现思路：在页面中内嵌入一个使用了 socket 类的 flash 程序，javascript 通过调用此 flash 程序提供的 socket 接口与服务器端的 socket 接口进行通信，javascript 通过 flash socket 接收到服务器端传送的数据；
+  - 优点：实现真正的即时通信，而不是伪即时；
+  - 缺点：现代浏览器已经逐步放弃对Flash的支持；
+
+* websocket
+websocket 是 HTML5 开始提供的一种浏览器与服务器间进行全双工通讯的网络技术。依靠这种技术可以实现客户端和服务器端的长连接，双向实时通信。
+
+websocket 的通迅流程：
+
+1. 建立握手
+   WebSocket通信的第一步是建立握手（handshake）连接。客户端发送一个HTTP请求，其中包含特殊的头部信息，表明客户端希望升级连接为WebSocket。服务器接收到该请求后，进行验证和协议升级的处理。
+
+   #+begin_example
+     GET /chat HTTP/1.1
+     Host: server.example.com
+     Upgrade: websocket
+     Connection: Upgrade
+     Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==
+     Origin: http://example.com
+     Sec-WebSocket-Protocol: chat, superchat
+     Sec-WebSocket-Version: 13
+   #+end_example
+
+2. 握手响应
+   如果服务器验证成功并同意升级连接为WebSocket，它将返回一个HTTP 101状态码（Switching Protocols），表示握手成功。响应头中包含一些特殊的头部信息，如Upgrade和Connection字段，表明连接已成功升级为WebSocket。
+
+   #+begin_example
+     HTTP/1.1 101 Switching Protocols
+     Upgrade: websocket
+     Connection: Upgrade
+     Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=
+     Sec-WebSocket-Protocol: chat
+   #+end_example
+
+3. 数据传输
+   建立握手后，WebSocket连接就成为一个持久性的双向通信通道。客户端和服务器都可以通过该连接发送和接收数据，而无需每次都发送新的HTTP请求。客户端和服务器可以直接发送文本或二进制数据，而不需要进行解析和序列化。
+
+4. 关闭连接
+   当通信完成或需要关闭连接时，客户端或服务器可以发送一个特殊的关闭帧（close frame），表示关闭连接。在收到关闭帧后，另一方也会发送关闭帧，然后双方的连接就会关闭。
+
+-----
+
+websocket 所有 API 详见：[[https://developer.mozilla.org/en-US/docs/Web/API/WebSocket]]
+
+
+- WebSocket构造函数
+  #+begin_src js
+    var socket = new WebSocket("ws://localhost:8080");
+  #+end_src
+
+- webSocket.readyState
+  #+begin_example
+    CONNECTING：0，正在连接。
+    OPEN：1，连接成功，可以通信了。
+    CLOSING：2，连接正在关闭。
+    CLOSED：3，连接已经关闭，或者打开连接失败。
+  #+end_example
+
+- webSocket.onopen 用于指定连接成功后的回调函数。
+
+- webSocket.onclose 用于指定连接关闭后的回调函数。
+
+- webSocket.onmessage 用于指定收到服务器数据后的回调函数。服务器数据可能是文本，也可能是二进制数据（blob对象或Arraybuffer对象）。可以使用binaryType属性，显式指定收到的二进制数据类型。
+
+- webSocket.send() 用于向服务器发送数据。
+
+- webSocket.onerror 用于指定报错时的回调函数。
+
+-----
+
+推荐一个实时通信的库：[[https://socket.io/docs/][socket.io]]
