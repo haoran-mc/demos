@@ -1,0 +1,22 @@
+<html>
+  <head>
+    <title>{{.PageTitle}}</title>
+    <style>
+      .done {
+        color: grey;
+        text-decoration: line-through;
+      }
+    </style>
+  </head>
+  <body>
+    <ul>
+      {{range .Todos}}
+        {{if .Done}}
+          <li class="done">{{.Title}}</li>
+        {{else}}
+          <li>{{.Title}}</li>
+        {{end}}
+      {{end}}
+    </ul>
+  </body>
+</html>
