@@ -1,0 +1,48 @@
+#+BLOCK_LINE: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#+TITLE: README
+#+AUTHOR: Haoran Liu
+#+EMAIL: haoran.mc@outlook.com
+#+DATE: 2024-06-20 00:06 Thu
+#+STARTUP: showeverything
+#+OPTIONS: author:nil toc:t ^:{} _:{}
+#+BLOCK_LINE: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+- *Multipart Form*
+  - 表单上传 curl -X POST -F "file=@/Users/haoran/Downloads/test.pdf" 127.0.0.1:7782/file
+
+  #+begin_src go
+    // 处理表单方式上传的文件
+    e.POST("/upload-form", func(c echo.Context) error {
+        // 获取上传的文件
+        file, _ := c.FormFile("file")
+
+        // 打开目标文件
+        dst, _ := os.Create("/path/to/uploaded_file")
+
+        // 将上传的文件拷贝到目标文件
+        src, _ := file.Open()
+        _, _ = io.Copy(dst, src)
+
+        return c.String(http.StatusOK, "File uploaded successfully via form!\n")
+    })
+  #+end_src
+
+- *Body binary*
+  - 直接上传 curl -X PUT -T /Users/haoran/Downloads/test.pdf 127.0.0.1:7782/file/file.pdf
+    --upload-file = -T，同一种参数的两种写法
+
+  - TODO 二进制上传 curl -X POST --data-binary /Users/haoran/Downloads/test.pdf 127.0.0.1:7782/file
+
+  #+begin_src go
+    // 处理二进制方式上传的文件
+    e.POST("/upload-binary", func(c echo.Context) error {
+        // 打开目标文件
+        dst, _ := os.Create("/path/to/uploaded_file")
+
+        // 将请求体的内容拷贝到目标文件
+        _, _ := io.Copy(dst, c.Request().Body)
+
+        return c.String(http.StatusOK, "File uploaded successfully via binary!\n")
+    })
+
+  #+end_src

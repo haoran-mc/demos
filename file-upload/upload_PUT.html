@@ -1,0 +1,29 @@
+<html>
+  <head>
+    <title>document</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Haoran Liu">
+  </head>
+  <body>
+    <input type="file" id="fileInput">
+    <!-- type="file"表示可以上传文件
+         multiple表示可以一次上传多个文件，single表示只能上传一个文件
+         accept="image/gif,image/png"表示只能上传图片的gif和png格式
+         accept=".png,.txt"表示上传.png和.txt格式
+         accept="image/*"表示上传所有的图片格式 -->
+
+    <button onclick="uploadFile()">Upload</button>
+
+    <script>
+     function uploadFile() {
+       const fileInput = document.getElementById('fileInput');
+       const file = fileInput.files[0];
+       const xhr = new XMLHttpRequest();
+
+       xhr.open("PUT", "http://127.0.0.1:7782/file/" + file.name, true);
+       xhr.setRequestHeader("Content-Type", file.type);
+       xhr.send(file);
+     }
+    </script>
+  </body>
+</html>
