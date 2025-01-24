@@ -30,6 +30,8 @@ func main() {
 	}
 	defer handle.Close()
 
+	// handle.SetBPFFilter("tcp and port 80")
+
 	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
 	for packet := range packetSource.Packets() {
 		printPacketInfo(packet)
@@ -82,6 +84,7 @@ func printPacketInfo(packet gopacket.Packet) {
 		// Bool flags: FIN, SYN, RST, PSH, ACK, URG, ECE, CWR, NS
 		fmt.Printf("From port %d to %d\n", tcp.SrcPort, tcp.DstPort)
 		fmt.Println("Sequence number:", tcp.Seq)
+		fmt.Println("TCP Payload: ", string(tcp.Payload))
 		fmt.Println()
 	}
 
