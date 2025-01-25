@@ -7,3 +7,5 @@
 5. [[https://github.com/haoran-mc/demos/tree/main/go-libpcap/bpf-filter/main.go][设置过滤器]]
 6. [[https://github.com/haoran-mc/demos/tree/main/go-libpcap/pkt-layers/main.go][解码 packet 的各层]]
 7. [[https://github.com/haoran-mc/demos/tree/main/go-libpcap/create-pkt/main.go][创建 packet、发送]]
+8. [[https://github.com/haoran-mc/demos/tree/main/go-libpcap/print-pkt/main.go][打印 packet 信息]]，↑ 2、6 是实时打印，现在打印自己构造的包
+9. [[https://github.com/haoran-mc/demos/tree/main/go-libpcap/faster-parser/main.go][更快的解码]] ~DecodingLayerParser~
