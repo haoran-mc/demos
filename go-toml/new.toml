@@ -1,0 +1,38 @@
+Title = "TOML example 😊"
+desc = "hello world"
+Integers = [42, 66, 34, 6]
+Floats = [1.42, 0.01]
+Times = [2021-11-09T15:16:17+01:00, 2021-11-09T15:16:17Z, 2021-11-09T15:16:17+08:00, 2021-11-09T00:00:00+08:00, 0000-01-01T15:16:17+08:00]
+Duration = ["4m49s", "8m3s", "1231h15m55s"]
+
+[[Distros]]
+  Name = "Arch Linux"
+  Packages = "pacman"
+
+[[Distros]]
+  Name = "Void Linux"
+  Packages = "xbps"
+
+[[Distros]]
+  Name = "Debian"
+  Packages = "apt"
+
+[Servers]
+  [Servers.alpha]
+    IP = "10.0.0.1"
+    Hostname = "server1"
+    Enabled = false
+  [Servers.beta]
+    IP = "10.0.0.2"
+    Hostname = "server2"
+    Enabled = true
+
+[Characters]
+
+  [[Characters.star-trek]]
+    Name = "James Kirk"
+    Rank = "Captain"
+
+  [[Characters.star-trek]]
+    Name = "Spock"
+    Rank = "Science officer"
