@@ -1,11 +1,11 @@
 [[https://www.devdungeon.com/content/packet-capture-injection-and-analysis-gopacket][Packet Capture, Injection, and Analysis with Gopacket]]
 
-1. [[https://github.com/haoran-mc/demos/tree/main/go-libpcap/find-all-devs/main.go][查找设备]] [[file:open-device/main.go][main.go]]
-2. [[https://github.com/haoran-mc/demos/tree/main/go-libpcap/open-device/main.go][打开一个设备进行实时捕获]]
-3. [[https://github.com/haoran-mc/demos/tree/main/go-libpcap/write-pcap/main.go][写入 pcap 文件]]
-4. [[https://github.com/haoran-mc/demos/tree/main/go-libpcap/read-pcap/main.go][读取 pcap 文件]]
-5. [[https://github.com/haoran-mc/demos/tree/main/go-libpcap/bpf-filter/main.go][设置过滤器]]
-6. [[https://github.com/haoran-mc/demos/tree/main/go-libpcap/pkt-layers/main.go][解码 packet 的各层]]
-7. [[https://github.com/haoran-mc/demos/tree/main/go-libpcap/create-pkt/main.go][创建 packet、发送]]
-8. [[https://github.com/haoran-mc/demos/tree/main/go-libpcap/print-pkt/main.go][打印 packet 信息]]，↑ 2、6 是实时打印，现在打印自己构造的包
-9. [[https://github.com/haoran-mc/demos/tree/main/go-libpcap/faster-parser/main.go][更快的解码]] ~DecodingLayerParser~
+1. [[file:find-all-devs/main.go][查找设备]]
+2. [[file:open-device/main.go][打开一个设备进行实时捕获]]
+3. [[file:write-pcap/main.go][写入 pcap 文件]]
+4. [[file:read-pcap/main.go][读取 pcap 文件]]
+5. [[file:bpf-filter/main.go][设置过滤器]]
+6. [[file:pkt-layers/main.go][解码 packet 的各层]]
+7. [[file:create-pkt/main.go][创建 packet、发送]]
+8. [[file:print-pkt/main.go][打印 packet 信息]]，↑ 2、6 是实时打印，现在打印自己构造的包
+9. [[file:faster-parser/main.go][更快的解码]] ~DecodingLayerParser~
