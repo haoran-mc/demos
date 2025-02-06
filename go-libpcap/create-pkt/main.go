@@ -10,21 +10,15 @@ import (
 )
 
 var (
-	device       string = "en0"
-	snapshot_len int32  = 1024
-	promiscuous  bool   = false
+	snapshot_len int32 = 1024
+	promiscuous  bool  = false
 	err          error
 	handle       *pcap.Handle
-	srcIP        net.IP         = net.IPv4(192, 168, 1, 100) // 替换为你的源 IP
-	dstIP        net.IP         = net.IPv4(192, 168, 1, 101) // 替换为目标 IP
-	srcPort      layers.TCPPort = layers.TCPPort(12345)      // 源端口
-	dstPort      layers.TCPPort = layers.TCPPort(80)         // 目标端口
-	payload      []byte         = []byte("Hello, TCP!")      // TCP 数据负载
 )
 
 func main() {
 	// 获取设备的网络信息
-	handle, err = pcap.OpenLive(device, snapshot_len, promiscuous, pcap.BlockForever)
+	handle, err = pcap.OpenLive("en0", snapshot_len, promiscuous, pcap.BlockForever)
 	if err != nil {
 		log.Fatalf("打开设备失败: %v", err)
 	}
@@ -76,14 +70,14 @@ func sendTCP() {
 		TOS:      0,
 		TTL:      64,
 		Protocol: layers.IPProtocolTCP,
-		SrcIP:    srcIP,
-		DstIP:    dstIP,
+		SrcIP:    net.IPv4(192, 168, 1, 100),
+		DstIP:    net.IPv4(192, 168, 1, 101),
 	}
 
 	// 构造 TCP 层（第四层）
 	tcpLayer := &layers.TCP{
-		SrcPort: srcPort,
-		DstPort: dstPort,
+		SrcPort: layers.TCPPort(12345),
+		DstPort: layers.TCPPort(80),
 		Seq:     1105024978,
 		Ack:     0,
 		Window:  1500,
