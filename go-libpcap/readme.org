@@ -1,6 +1,6 @@
 [[https://www.devdungeon.com/content/packet-capture-injection-and-analysis-gopacket][Packet Capture, Injection, and Analysis with Gopacket]]
 
-1. [[https://github.com/haoran-mc/demos/tree/main/go-libpcap/find-all-devs/main.go][查找设备]]
+1. [[https://github.com/haoran-mc/demos/tree/main/go-libpcap/find-all-devs/main.go][查找设备]] [[file:open-device/main.go][main.go]]
 2. [[https://github.com/haoran-mc/demos/tree/main/go-libpcap/open-device/main.go][打开一个设备进行实时捕获]]
 3. [[https://github.com/haoran-mc/demos/tree/main/go-libpcap/write-pcap/main.go][写入 pcap 文件]]
 4. [[https://github.com/haoran-mc/demos/tree/main/go-libpcap/read-pcap/main.go][读取 pcap 文件]]
