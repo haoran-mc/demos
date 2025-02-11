@@ -1,8 +1,11 @@
+Network protocol analysis.
+
+
 [[https://www.devdungeon.com/content/packet-capture-injection-and-analysis-gopacket][Packet Capture, Injection, and Analysis with Gopacket]]
 
 1. [[file:find-all-devs/main.go][查找设备]]
 2. [[file:open-device/main.go][打开一个设备进行实时捕获]]
-3. [[file:write-pcap/main.go][写入 pcap 文件]]
+3. [[file:write-pcap/main.go][写入 pcap 文件]]、[[file:build-pcap][组一个 pcap 文件]]
 4. [[file:read-pcap/main.go][读取 pcap 文件]]
 5. [[file:bpf-filter/main.go][设置过滤器]]
 6. [[file:pkt-layers/main.go][解码 packet 的各层]]
