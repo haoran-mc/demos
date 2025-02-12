@@ -9,7 +9,7 @@
 - 数据：64-1500 字节。
 
 
-*** IP 协议
+*** IPv4
 [[file:images/1739186287.png]]
 
 - 版本（Version）因为目前仍主要使用 IPv4 版本，所以这里的值通常是 0x4，占 4 位；
@@ -41,7 +41,7 @@
 - 选项（Options）+填充（Padding）这两个选项较少使用，只有某些特殊的封包需要特定的控制才会利用到，共 32 位（不考虑）。
 
 
-*** TCP 协议
+*** TCP
 [[file:images/1739248672.png]]
 
 - 源端口，16bits，范围 0~65525；
@@ -79,3 +79,16 @@
 - Timestamp（4B）： 时间戳低位，能够精确到 microseconds；
 - Caplen（4B）： 当前数据区的长度，即抓取到的数据帧长度，由此可以得到下一个数据帧的位置；
 - Len（4B）： 离线数据长度，网路中实际数据帧的长度，一般不大于 Caplen，多数情况下和 Caplen值一样。
+
+
+*** IPv6
+[[file:images/1739325445.png]]
+
+- Version：4bits 0x4表示IPv4、0x6表示IPv6；
+- Traffic Class：8bits 流量类别，等同于 IPv4 中的 TOS 字段，表示 IPv6 数据报的类或优先级，主要应用于 QoS，常设为 0x00 表示没有特殊优先级；
+- Flow Label：20bits 流标签，IPv6 中的新增字段，用于区分实时流量，不同的流标签+源地址可以唯一确定一条数据流，中间网络设备可以根据这些信息更加高效率的区分数据流。如果不使用流标签，通常设为 0x00000（即 20 个 0）。许多普通 IPv6 流量（如 Web 浏览）不会使用 Flow Label；
+- Payload Length：16bits 用于指示 IPv6 报文中载荷（Payload）的长度，不包括 IPv6 头部的长度；
+- Next Header：8bits 用于指示 IPv6 头部后面的下一个报头类型，如TCP报头（0x06）、UDP报头、ICMPv6报头等；
+- Hop Limit：8bits 类似 IPv4 中的生存时间（TTL）字段，限制报文在网络中经过的最大跳数；
+- Source Address：128bits 发送方地址；
+- Destination Address：128bits 接收方地址；
