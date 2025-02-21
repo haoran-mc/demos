@@ -23,7 +23,7 @@
     ␣␣␣␣␣␣x␣ ECN-Capable Transport 显式拥塞指示传输字段，取值 0（不支持 ECN）、1（支持 ECN）
     ␣␣␣␣␣␣␣x Congestion Experienced 拥塞预警字段，取值 0（正常，不拥塞）、1（拥塞）
   #+end_example
-- 包长度（Total Length，TL）占 16 位；
+- 包长度（Total Length，TL）占 16 位，包括IP头和数据部分；
 - 标识（Identification）每一个IP封包都有一个 16 位的唯一识别码，占 16 位；
 - 标记（Flags）占 3 位；
   #+begin_example
@@ -92,3 +92,43 @@
 - Hop Limit：8bits 类似 IPv4 中的生存时间（TTL）字段，限制报文在网络中经过的最大跳数；
 - Source Address：128bits 发送方地址；
 - Destination Address：128bits 接收方地址；
+
+
+*** TCP 伪首部 pseudoHeader
+IPv4
+#+begin_example
+   0      7 8     15 16    23 24    31
+  +--------+--------+--------+--------+
+  |          source address           |
+  +--------+--------+--------+--------+
+  |        destination address        |
+  +--------+--------+--------+--------+
+  |  zero  |protocol| TCP/UDP length  |
+  +--------+--------+--------+--------+
+#+end_example
+
+
+IPv6
+#+begin_example
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  |                                                               |
+  +                                                               +
+  |                                                               |
+  +                         Source Address                        +
+  |                                                               |
+  +                                                               +
+  |                                                               |
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  |                                                               |
+  +                                                               +
+  |                                                               |
+  +                      Destination Address                      +
+  |                                                               |
+  +                                                               +
+  |                                                               |
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  |                   Upper-Layer Packet Length                   |
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  |                      zero                     |  Next Header  |
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+#+end_example

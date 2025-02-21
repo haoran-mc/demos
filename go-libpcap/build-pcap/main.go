@@ -49,22 +49,37 @@ func buildPcap() []byte {
 	}
 
 	// ipv6 req
-	ipv6Payload := []byte("GET /hello HTTP/1.1\r\nHost: pcap.ran.net\r\n\r\n")
-	ipv6Packet := buildTCPPacketIPv6("2001:db8::2", "2001:db8::1", 12345, 80, 2, 1, ipv6Payload)
-	ipv6PacketLen := uint32(len(ipv6Packet))
+	ipv6ReqPayload := []byte("GET /hello HTTP/1.1\r\nHost: pcap.ran.net\r\n\r\n")
+	ipv6ReqPacket := buildTCPPacketIPv6("2001:db8::1", "2001:db8::2", 12345, 80, 1, 0, ipv6ReqPayload)
+	ipv6ReqPacketLen := uint32(len(ipv6ReqPacket))
 
-	ipv6PcapPacketHeader := []byte{
+	ipv6ReqPcapPacketHeader := []byte{
 		0x00, 0x00, 0x00, 0x00, // Timestamp (Seconds)
 		0x00, 0x00, 0x00, 0x00, // Timestamp (Microseconds or nanoseconds)
-		byte(ipv6PacketLen), byte(ipv6PacketLen >> 8), byte(ipv6PacketLen >> 16), byte(ipv6PacketLen >> 24), // Captured Packet Length
-		byte(ipv6PacketLen), byte(ipv6PacketLen >> 8), byte(ipv6PacketLen >> 16), byte(ipv6PacketLen >> 24), // Original Packet Length
+		byte(ipv6ReqPacketLen), byte(ipv6ReqPacketLen >> 8), byte(ipv6ReqPacketLen >> 16), byte(ipv6ReqPacketLen >> 24),
+		byte(ipv6ReqPacketLen), byte(ipv6ReqPacketLen >> 8), byte(ipv6ReqPacketLen >> 16), byte(ipv6ReqPacketLen >> 24),
 	}
+
+	// ipv6 res
+	ipv6ResPayload := []byte("HTTP/1.1 200 OK\r\n" + "Content-Length: 13\r\n" + "\r\n" + "hello, world!")
+	ipv6ResPacket := buildTCPPacketIPv6("2001:db8::2", "2001:db8::1", 80, 12345, 1, 1, ipv6ResPayload)
+	ipv6ResPacketLen := uint32(len(ipv6ResPacket))
+
+	ipv6ResPcapPacketHeader := []byte{
+		0x00, 0x00, 0x00, 0x00, // Timestamp (Seconds)
+		0x00, 0x00, 0x00, 0x00, // Timestamp (Microseconds or nanoseconds)
+		byte(ipv6ResPacketLen), byte(ipv6ResPacketLen >> 8), byte(ipv6ResPacketLen >> 16), byte(ipv6ResPacketLen >> 24),
+		byte(ipv6ResPacketLen), byte(ipv6ResPacketLen >> 8), byte(ipv6ResPacketLen >> 16), byte(ipv6ResPacketLen >> 24),
+	}
+
 	return append(pcapHeader,
 		append(reqPcapPacketHeader,
 			append(reqPacket,
 				append(respPcapPacketHeader,
 					append(respPacket,
-						append(ipv6PcapPacketHeader, ipv6Packet...)...)...)...)...)...)
+						append(ipv6ReqPcapPacketHeader,
+							append(ipv6ReqPacket,
+								append(ipv6ResPcapPacketHeader, ipv6ResPacket...)...)...)...)...)...)...)...)
 }
 
 // big-endian
