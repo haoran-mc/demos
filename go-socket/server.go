@@ -38,4 +38,19 @@ func handleConnection(conn net.Conn) {
 	}
 
 	fmt.Println("Data:", string(buf[:n]))
+
+	// HTTP 响应，响应可有可无
+	// 而且因为 client.go 没有接收响应的能力，所以收不到响应
+	// 使用 curl 127.0.0.1:9022 能够收到响应
+	response := "HTTP/1.1 200 OK\r\n" +
+		"Content-Type: text/plain\r\n" +
+		"Content-Length: 13\r\n" +
+		"Connection: close\r\n" +
+		"\r\n" +
+		"Hello, world!"
+
+	_, err = conn.Write([]byte(response))
+	if err != nil {
+		fmt.Println("Fail to send response:", err.Error())
+	}
 }
