@@ -1,0 +1,11 @@
+:START_ID(poet-id),:END_ID(poem-id),:TYPE,relation
+0,0,relation,作品
+1,1,relation,作品
+2,2,relation,作品
+3,3,relation,作品
+4,4,relation,作品
+5,5,relation,作品
+6,6,relation,作品
+7,7,relation,作品
+8,8,relation,作品
+9,9,relation,作品
