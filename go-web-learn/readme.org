@@ -1,0 +1,49 @@
+* 设计一个框架
+大部分时候，我们需要实现一个Web应用，第一反应是应该使用哪个框架。不同的框架设计理念和提供的功能有很大的差别。比如 Python 语言的 ~django~ 和 ~flask~ ，前者大而全，后者小而美。Go语言/Golang也是这样，新框架层出不穷，比如 ~Beego~ ， ~Gin~ ， ~Iris~ 等。那为什么不直接使用标准库，而必须使用框架呢？在设计一个框架之前，我们需要回答框架核心为我们解决了什么问题。只有理解了这一点，才能想明白我们需要在框架中实现什么功能。
+
+我们先看看标准库 ~net/http~ 如何处理一个请求。
+
+#+begin_src go
+  func main() {
+      http.HandleFunc("/", handler)
+      http.HandleFunc("/count", counter)
+      log.Fatal(http.ListenAndServe("localhost:8000", nil))
+  }
+
+  func handler(w http.ResponseWriter, r *http.Request) {
+      fmt.Fprintf(w, "URL.Path = %q\n", r.URL.Path)
+  }
+#+end_src
+
+~net/http~ 提供了基础的 Web 功能，即监听端口，映射静态路由，解析 HTTP 报文。一些 Web 开发中简单的需求并不支持，需要手工实现。
+
+- 动态路由：例如 ~hello/:name~ ， ~hello/*~ 这类规则。
+- 鉴权：没有分组/统一鉴权的能力，需要在每个路由映射的 handler 中实现。
+- 模板：没有统一简化的 HTML 机制。
+- ...
+
+当我们离开框架，使用基础库时，需要频繁手工处理的地方，就是框架的价值所在。但并不是每一个频繁处理的地方都适合在框架中完成。Python 有一个很著名的 Web 框架，名叫 ~bottle~ ，整个框架由 ~bottle.py~ 一个文件构成，共 4400 行，可以说是一个微框架。那么理解这个微框架提供的特性，可以帮助我们理解框架的核心能力。
+
+- 路由（Routing）：将请求映射到函数，支持动态路由，例如 ~/hello/:name~ 。
+- 模板（Templates）：使用内置模板引擎提供模板渲染机制。
+- 工具集（Utilites）：提供对 cookies，headers 等处理机制。
+- 插件（Plugin）： ~bottle~ 本身功能有限，但提供了插件机制，可以选择安装到全局，也可以仅针对某几个路由生效。
+- ...
+
+* Gee 框架
+本教程来源：[[https://geektutu.com/post/gee.html][7天实现Gee框架]]
+
+这个教程将使用 Go 语言实现一个简单的 Web 框架，起名叫做 ~Gee~ ，我第一次接触 Go 语言的 Web 框架是 ~Gin~ ， ~Gin~ 的代码总共是 14K，其中测试代码 9K，也就是说实际代码量只有 5K。 ~Gin~ 也是我非常喜欢的一个框架，与 Python 中的 ~Flask~ 很像，小而美。
+
+这个教程的很多设计包括源码，参考了 ~Gin~ ，大家可以看到很多 ~Gin~ 的影子。
+
+时间关系，同时为了尽可能地简洁明了，这个框架中的很多部分实现的功能都很简单，但是尽可能地体现一个框架核心的设计原则。例如 ~Router~ 的设计，虽然支持的动态路由规则有限，但为了性能考虑匹配算法是用 ~Trie~ 树实现的， ~Router~ 最重要的指标之一便是性能。
+
+* 目录
+- 第一天：[[https://github.com/haoran-mc/go_pkgs/tree/main/go_web/01-http.Handler][前置知识（http.Handler接口）]]
+- 第二天：[[https://github.com/haoran-mc/go_pkgs/tree/main/go_web/02-context][上下文设计（Context）]]
+- 第三天：[[https://github.com/haoran-mc/go_pkgs/tree/main/go_web/03-trie_router][Trie树路由（Router）]]
+- 第四天：[[https://github.com/haoran-mc/go_pkgs/tree/main/go_web/04-group][分组控制（Group）]]
+- 第五天：[[https://github.com/haoran-mc/go_pkgs/tree/main/go_web/05-middleware][中间件（Middleware）]]
+- 第六天：[[https://github.com/haoran-mc/go_pkgs/tree/main/go_web/06-template][HTML模板（Template）]]
+- 第七天：[[https://github.com/haoran-mc/go_pkgs/tree/main/go_web/07-recover][错误恢复（Panic Recover）]]
